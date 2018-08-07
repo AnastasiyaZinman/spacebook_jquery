@@ -89,7 +89,7 @@ var SpacebookApp = function () {
       var post = GetPost($postID);
       var index = GetIndexOfPost(post);
        console.log("splice",this.posts[index].comments.splice($commentID, 1));
-      //  alert($(cur_btn));
+      //  console.log($(cur_btn.parent));
      app.getCommentsHTML($(cur_btn).parent,index);
       // app.renderPosts();
     },
