@@ -45,20 +45,12 @@ var SpacebookApp = function () {
     renderPosts: function () {
       this.$posts.empty();
 
-      for (var i = 0; i < this.posts.length; i += 1) {
-        var post = this.posts[i];
-        var cur_div = $('.comments-container');
-        var commentsContainer = `<div class="comments-container">
-                                  <input type="text" class="comment-name">
-                                  <button class="btn btn-primary add-comment">Post Comment</button> 
-                                  <ul>${this.getCommentsHTML(GetIndexOfPost(post))}</ul>
-                                </div>
-        `;
+        var source = $('#post-template').html();
+        var template = Handlebars.compile(source);
+        var newHTML = template(this);
+        this.$posts.append(newHTML); 
+        bindEvents();
 
-        this.$posts.append('<div class="post" data-id=' + post.id + '>'
-          + '<a href="#" class="remove">remove</a> ' + '<a href="#" class="show-comments">comments</a> ' + post.text +
-          commentsContainer + '</div>'); bindEvents();
-      }
     },
 
     removePost: function (post) {
@@ -80,16 +72,10 @@ var SpacebookApp = function () {
 
     },
     removeComment: function (cur_btn) {
-      // console.log("cur_btn",cur_btn);
-      $clickedComment=$(cur_btn).prev(".comment_text");
-      var $comment_text=$clickedComment.text();
-      let $postID = $(cur_btn).closest('.post').data().id;
-      // console.log("$postID",$postID);
-      // debugger;
-      var post = GetPost($postID);
-      var index = GetIndexOfPost(post);
-      var $commentIndex=SearchCommentIndex(index,$comment_text );
-      this.posts[index].comments.splice($commentIndex, 1);
+      let postID = $(cur_btn).closest('.post').data().id;
+      let commentIndex = $(cur_btn).closest("p").index();
+      var post = GetPost(postID); 
+      post.comments.splice(commentIndex, 1);
       app.renderPosts();
     },
 
