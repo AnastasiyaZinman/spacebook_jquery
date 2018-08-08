@@ -1,3 +1,4 @@
+//With Handlebars
 var SpacebookApp = function () {
   return {
     posts: [
