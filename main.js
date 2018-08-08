@@ -3,16 +3,16 @@ var SpacebookApp = function () {
     posts: [
       {
         text: "Hello world 1", id: 1, comments: [
-          { text: "Man, this is a comment!" },
-          { text: "Man, this is a comment!" },
-          { text: "Man, this is a comment!" }
+          { text: "Man, this is a comment 1!" },
+          { text: "Man, this is a comment 2!" },
+          { text: "Man, this is a comment 3!" }
         ]
       },
       {
         text: "Hello world 2", id: 2, comments: [
-          { text: "Man, this is a comment!" },
-          { text: "Man, this is a comment!" },
-          { text: "Man, this is a comment!" }
+          { text: "Man, this is a comment 1!" },
+          { text: "Man, this is a comment 2!" },
+          { text: "Man, this is a comment 3!" }
         ]
       }
     ],
@@ -51,9 +51,9 @@ var SpacebookApp = function () {
         var commentsContainer = `<div class="comments-container">
                                   <input type="text" class="comment-name">
                                   <button class="btn btn-primary add-comment">Post Comment</button> 
-                                  <ul></ul>
-                                </div>`;
-        //${this.getCommentsHTML(cur_div,GetIndexOfPost(post))}
+                                  <ul>${this.getCommentsHTML(GetIndexOfPost(post))}</ul>
+                                </div>
+        `;
 
         this.$posts.append('<div class="post" data-id=' + post.id + '>'
           + '<a href="#" class="remove">remove</a> ' + '<a href="#" class="show-comments">comments</a> ' + post.text +
@@ -61,8 +61,8 @@ var SpacebookApp = function () {
       }
     },
 
-    removePost: function (postID) {
-      var post = this._findPostById(postID);
+    removePost: function (post) {
+      
       this.posts.splice(this.posts.indexOf(post), 1);
     },
 
@@ -76,36 +76,31 @@ var SpacebookApp = function () {
       }
 
       this.posts[id].comments.push(comment);
-      console.log("com",this.posts[id].comments);
+      // console.log("com",this.posts[id].comments);
 
     },
     removeComment: function (cur_btn) {
-      let $clickedComment = $(cur_btn).closest('.comment');
-      let $commentID = $clickedComment.data().commentid;
-      console.log("$commentID",$commentID);
+      // console.log("cur_btn",cur_btn);
+      $clickedComment=$(cur_btn).prev(".comment_text");
+      var $comment_text=$clickedComment.text();
       let $postID = $(cur_btn).closest('.post').data().id;
-      console.log("$postID",$postID);
+      // console.log("$postID",$postID);
       // debugger;
       var post = GetPost($postID);
       var index = GetIndexOfPost(post);
-       console.log("splice",this.posts[index].comments.splice($commentID, 1));
-      //  alert($(cur_btn));
-     app.getCommentsHTML($(cur_btn).parent,index);
-      // app.renderPosts();
+      var $commentIndex=SearchCommentIndex(index,$comment_text );
+      this.posts[index].comments.splice($commentIndex, 1);
+      app.renderPosts();
     },
 
-    getCommentsHTML: function (current_dom, index) {
-      $(current_dom).find("p").remove();;
-      console.log(index);
-      if (this.posts[index]["comments"].length) {
-        for (let i = 0; i < app.posts[index]["comments"].length; i++) {
-          console.log("i=", i);
-          $(current_dom).find("ul").append("<p class='comment' data-commentid='"+ i +"'>" +
-            app.posts[index]["comments"][i].text +
-            "<button type='button' class='close' aria-label='Close'><span aria-hidden='true'>&times;</span>REMOVE</button>" + "</p>");
-          bindCommentsEvents();
+    getCommentsHTML: function (id) {
+        var comments_str = '';
+        if (this.posts[id]) {
+        for (let i = 0; i<this.posts[id].comments.length; i++) {
+          comments_str = comments_str + `<p class='comment' data-commentid=${i}><span class="comment_text">${this.posts[id].comments[i].text}</span><button type='button' class='close' aria-label='Close'><span aria-hidden='true'>&times;</span>REMOVE</button></p>`;
         }
-      } else console.log('empty');
+      }
+        return comments_str;
     }
   };
 }
@@ -117,23 +112,26 @@ function bindEvents() {
     var postAndId = GetPostAndId(this);
     var post = GetPost(postAndId.postId);
     var index = GetIndexOfPost(post);
-    var text = $(FindCurrentDiv(this)).children('.comment-name').val();
+    var text = $(FindCurrentDiv(this)).find('.comment-name').val();
     app.createComment(index, text);
-    app.getCommentsHTML(FindCurrentDiv(this), index);
+    app.renderPosts();
   });
 }
 
-function bindCommentsEvents() {
-  $('.close').off();
-  $('.close').click(function () {
-    app.removeComment(this);
-  });
-}
+$('body').on('click', '.close', function () {
+  console.log("delete");
+  app.removeComment(this);
+});
 
 function FindCurrentDiv(obj_dom) {
   return $(obj_dom).parent('.comments-container');
 }
-
+function SearchCommentIndex(index,text) {
+for(let j=0; j<app.posts[index].comments.length;j++)
+if (text===app.posts[index].comments[j].text) 
+  return j;
+  else null;
+}
 
 function GetPostAndId(current_btn) {
   var $clickedPost = $(current_btn).closest('.post');
@@ -163,7 +161,8 @@ $('.add-post').on('click', function () {
 $('.posts').on('click', '.remove', function () {
   var $clickedPost = $(this).closest('.post');
   var postID = $clickedPost.data().id;
-  app.removePost(postID);
+  var post = app._findPostById(postID);
+  app.removePost(post);
   app.renderPosts();
 });
 
