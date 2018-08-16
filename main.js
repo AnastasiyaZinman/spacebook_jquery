@@ -6,8 +6,6 @@ var SpacebookApp = function () {
       
         ],
 
-        // the current id to assign to a post
-        currentId: 1,
         $posts: $('.posts'),
 
         _findPostById: function (id) {
@@ -18,16 +16,15 @@ var SpacebookApp = function () {
                 }
             }
         },
-
-
+        
         createPost: function (text) {
             var post = {
                 text: text,
-                id: this.currentId,
+                id: guidPostId(),
                 comments: []
             }
 
-            this.currentId += 1;
+            // this.currentId += 1;
 
             this.posts.push(post);
             saveToLocalStorage();
@@ -35,9 +32,12 @@ var SpacebookApp = function () {
 
         renderPosts: function () {
             this.$posts.empty();
+            var postsLS = getFromLocalStorage();
+            app.posts = postsLS;
+            // var obj = {"posts":postsLS};
             var source = $('#post-template').html();
             var template = Handlebars.compile(source);
-            var newHTML = template(this);
+            var newHTML = template({"posts":postsLS});
             this.$posts.append(newHTML);
             bindEvents();
             saveToLocalStorage();
@@ -47,7 +47,7 @@ var SpacebookApp = function () {
             this.posts.splice(this.posts.indexOf(post), 1);
             saveToLocalStorage();
         },
-
+        
         toggleComments: function (currentPost) {
             var $clickedPost = $(currentPost).closest('.post');
             $clickedPost.find('.comments-container').toggleClass('show');
@@ -90,6 +90,16 @@ var saveToLocalStorage = function () {
   }
   var getFromLocalStorage = function () {
     return JSON.parse(localStorage.getItem(STORAGE_ID) || '[]');
+  }
+
+  var guidPostId = function (){
+    function S4() {
+        return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+    }
+     
+    // then to call it, plus stitch in '4' in the third group
+    guid = (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+    return guid;
   }
 
 function bindEvents() {
@@ -139,6 +149,7 @@ function GetIndexOfPost(post) {
 }
 
 // immediately invoke the render method
+
 app.renderPosts();
 
 // Events
